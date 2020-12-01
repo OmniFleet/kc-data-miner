@@ -1,0 +1,23 @@
+--- # deploy the king county vehicle GPS miner as a batch job to run once per minute
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: king-county-telemetry-miner
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: king-county-telemetry-miner
+              image: scbunn/omnifleet-kc-data-miner:v1.0.0
+              env:
+                - name: TELEMETRY_SERVER_URI
+                  value: http://gps-tracking-service.omnifleet.svc.cluster.local:5000/api/v1/location/
+                - name: PUSH_GATEWAY_URI
+                  value: http://push-gateway.omnifleet.svc.cluster.local:9091
+          restartPolicy: Never
